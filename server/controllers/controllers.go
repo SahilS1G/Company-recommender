@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/SahilS1G/server/key"
 	"github.com/SahilS1G/server/model"
@@ -13,7 +14,10 @@ import (
 var news []model.News
 
 func init() {
-	myUrl := fmt.Sprintf("https://newsapi.org/v2/everything?q=microsoft&apiKey=%s", key.Api_key)
+
+	var query []string = []string{"microsoft", "salary"}
+
+	myUrl := fmt.Sprintf("https://newsapi.org/v2/everything?q=%s&apiKey=%s", strings.Join(query, "+"), key.Api_key)
 	resp, err := http.Get(myUrl)
 	if err != nil {
 		fmt.Println("No response from request")
@@ -38,7 +42,7 @@ func GetNews(w http.ResponseWriter, r *http.Request) {
 
 	// json.NewEncoder(w).Encode(news[0].Articles[0].Description)
 
-	for i := range news[0].Articles {
-		json.NewEncoder(w).Encode(news[0].Articles[i].Title)
-	}
+	// for i := range news[0].Articles {
+	json.NewEncoder(w).Encode(news)
+	// }
 }
