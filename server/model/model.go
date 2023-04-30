@@ -21,3 +21,12 @@ type Source struct {
 	ID   any    `json:"id"`
 	Name string `json:"name"`
 }
+
+type Article struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+type NewsAPIResponse struct {
+	Articles []Article `json:"articles"`
+}

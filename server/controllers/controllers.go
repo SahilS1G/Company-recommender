@@ -12,19 +12,19 @@ import (
 	"strings"
 
 	"github.com/SahilS1G/server/key"
-	// "github.com/SahilS1G/server/model"
+	"github.com/SahilS1G/server/model"
 )
 
-type Article struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-}
+// type Article struct {
+// 	Title       string `json:"title"`
+// 	Description string `json:"description"`
+// }
 
-type NewsAPIResponse struct {
-	Articles []Article `json:"articles"`
-}
+// type NewsAPIResponse struct {
+// 	Articles []Article `json:"articles"`
+// }
 
-var newsResponse NewsAPIResponse
+var newsResponse model.NewsAPIResponse
 
 func init() {
 	// Make a request to the News API
@@ -50,8 +50,8 @@ func init() {
 	}
 	fmt.Println(newsResponse.Articles[1].Description)
 	// Loop over all articles and categorize them as positive or negative
-	var positiveArticles []Article
-	var negativeArticles []Article
+	var positiveArticles []model.Article
+	var negativeArticles []model.Article
 	for _, article := range newsResponse.Articles {
 		sentiment := getNewsSentiment(article.Title + " " + article.Description)
 		if sentiment == "Positive" {
