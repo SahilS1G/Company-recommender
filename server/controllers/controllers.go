@@ -4,47 +4,80 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+
 	"io"
 	"net/http"
 	"os"
 
 	"strings"
-
-	"github.com/SahilS1G/server/key"
-	"github.com/SahilS1G/server/model"
+	// "github.com/SahilS1G/server/key"
+	// "github.com/SahilS1G/server/model"
 )
 
-var news []model.News
+type Article struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+type NewsAPIResponse struct {
+	Articles []Article `json:"articles"`
+}
+
+var newsResponse NewsAPIResponse
 
 func init() {
-
-	var query []string = []string{"microsoft", "Africa"}
-
-	myUrl := fmt.Sprintf("https://newsapi.org/v2/everything?q=%s&apiKey=%s", strings.Join(query, "+"), key.Api_key)
-
-	resp, err := http.Get(myUrl)
-
+	// Make a request to the News API
+	// apiKey := "YOUR_API_KEY_HERE"
+	url := fmt.Sprintf("https://newsapi.org/v2/everything?q=Infosys&apiKey=%s", "612c24355bc24dbcbb4b13496d772971")
+	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("No response from request")
+		fmt.Println("Error making request to News API:", err)
+		return
 	}
-
 	defer resp.Body.Close()
 
+	// Parse the response JSON into a NewsAPIResponse struct
 	body, err := io.ReadAll(resp.Body)
-
 	if err != nil {
-		fmt.Println("No response from request")
+		fmt.Println("Error reading response from News API:", err)
+		return
+	}
+	err = json.Unmarshal(body, &newsResponse)
+	if err != nil {
+		fmt.Println("Error parsing response from News API:", err)
+		return
+	}
+	fmt.Println(newsResponse.Articles[1].Description)
+	// Loop over all articles and categorize them as positive or negative
+	var positiveArticles []Article
+	var negativeArticles []Article
+	for _, article := range newsResponse.Articles {
+		sentiment := getNewsSentiment(article.Title + " " + article.Description)
+		if sentiment == "Positive" {
+			positiveArticles = append(positiveArticles, article)
+		} else if sentiment == "Negative" {
+			negativeArticles = append(negativeArticles, article)
+		}
 	}
 
-	var result model.News
-
-	if err := json.Unmarshal(body, &result); err != nil {
-		fmt.Println("Can not unmarshal JSON")
+	// Print the results
+	fmt.Println("Positive articles:")
+	for _, article := range positiveArticles {
+		fmt.Println(article.Title)
 	}
 
-	// fmt.Println(result)
+	fmt.Println("Negative articles:")
+	for _, article := range negativeArticles {
+		fmt.Println(article.Title)
+	}
 
-	filePath := "./negative_positive_keywords/negative.txt"
+}
+
+func getNewsSentiment(article string) string {
+	var positiveWords []string
+	var negativeWords []string
+
+	filePath := "./negative_positive_keywords/positive.txt"
 	readFile, err := os.Open(filePath)
 
 	if err != nil {
@@ -52,17 +85,57 @@ func init() {
 	}
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
-	// var fileLines []string
 
 	for fileScanner.Scan() {
-		// fileLines = append(fileLines, fileScanner.Text())
+		positiveWords = append(positiveWords, strings.ToLower(fileScanner.Text()))
+
+	}
+
+	readFile.Close()
+	filePath2 := "./negative_positive_keywords/negative.txt"
+	readFile2, err := os.Open(filePath2)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner2 := bufio.NewScanner(readFile2)
+	fileScanner2.Split(bufio.ScanLines)
+
+	for fileScanner2.Scan() {
+		negativeWords = append(negativeWords, strings.ToLower(fileScanner2.Text()))
 
 	}
 
 	readFile.Close()
 
-	news = append(news, result)
-	fmt.Println(news)
+	articleWords := strings.Split(strings.ToLower(article), " ")
+	positiveCount := 0
+	negativeCount := 0
+
+	for _, word := range articleWords {
+		if contains(positiveWords, word) {
+			positiveCount++
+		} else if contains(negativeWords, word) {
+			negativeCount++
+		}
+	}
+
+	if positiveCount > negativeCount {
+		return "Positive"
+	} else if negativeCount > positiveCount {
+		return "Negative"
+	} else {
+		return "Neutral"
+	}
+}
+
+func contains(words []string, word string) bool {
+	for _, w := range words {
+		if w == word {
+			return true
+		}
+	}
+	return false
 }
 
 func GetNews(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +144,7 @@ func GetNews(w http.ResponseWriter, r *http.Request) {
 	// json.NewEncoder(w).Encode(news[0].Articles[0].Description)
 
 	// for i := range news[0].Articles {
-	json.NewEncoder(w).Encode(news[0])
+	json.NewEncoder(w).Encode(newsResponse)
+
 	// }
 }
