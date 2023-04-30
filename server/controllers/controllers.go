@@ -15,15 +15,6 @@ import (
 	"github.com/SahilS1G/server/model"
 )
 
-// type Article struct {
-// 	Title       string `json:"title"`
-// 	Description string `json:"description"`
-// }
-
-// type NewsAPIResponse struct {
-// 	Articles []Article `json:"articles"`
-// }
-
 var newsResponse model.NewsAPIResponse
 
 func init() {
