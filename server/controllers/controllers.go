@@ -10,7 +10,8 @@ import (
 	"os"
 
 	"strings"
-	// "github.com/SahilS1G/server/key"
+
+	"github.com/SahilS1G/server/key"
 	// "github.com/SahilS1G/server/model"
 )
 
@@ -28,7 +29,7 @@ var newsResponse NewsAPIResponse
 func init() {
 	// Make a request to the News API
 	// apiKey := "YOUR_API_KEY_HERE"
-	url := fmt.Sprintf("https://newsapi.org/v2/everything?q=Infosys&apiKey=%s", "612c24355bc24dbcbb4b13496d772971")
+	url := fmt.Sprintf("https://newsapi.org/v2/everything?q=Infosys&apiKey=%s", key.Api_key)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error making request to News API:", err)
