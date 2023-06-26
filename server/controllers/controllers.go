@@ -3,8 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
-	"io"
 	"net/http"
 
 	"github.com/SahilS1G/server/key"
@@ -28,30 +28,24 @@ func negative_positive(company string) {
 	defer resp.Body.Close()
 
 	// Parse the response JSON into a NewsAPIResponse struct
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error reading response from News API:", err)
-		return
-	}
-	err = json.Unmarshal(body, &newsResponse)
+	// var newsResponse model.NewsAPIResponse
+	err = json.NewDecoder(resp.Body).Decode(&newsResponse)
 	if err != nil {
 		fmt.Println("Error parsing response from News API:", err)
 		return
 	}
 
 	// Loop over all articles and categorize them as positive or negative
-
 	for _, article := range newsResponse.Articles {
-		sentiment := getNewsSentiment(article.Title + " " + article.Description)
-		if sentiment == "Positive" {
-			positiveArticles = append(positiveArticles, article)
-
-		} else if sentiment == "Negative" {
-
-			negativeArticles = append(negativeArticles, article)
+		if strings.Contains(strings.ToLower(article.Title), strings.ToLower(company)) {
+			sentiment := getNewsSentiment(article.Title + " " + article.Description)
+			if sentiment == "Positive" {
+				positiveArticles = append(positiveArticles, article)
+			} else if sentiment == "Negative" {
+				negativeArticles = append(negativeArticles, article)
+			}
 		}
 	}
-
 }
 
 func getNewsSentiment(article string) string {
